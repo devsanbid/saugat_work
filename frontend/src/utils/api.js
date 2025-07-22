@@ -47,7 +47,20 @@ class ApiClient {
   }
 
   async get(endpoint, options = {}) {
-    return this.request(endpoint, { method: 'GET', ...options });
+    let url = endpoint;
+    if (options.params) {
+      const searchParams = new URLSearchParams();
+      Object.keys(options.params).forEach(key => {
+        if (options.params[key] !== undefined && options.params[key] !== null) {
+          searchParams.append(key, options.params[key]);
+        }
+      });
+      const queryString = searchParams.toString();
+      if (queryString) {
+        url += (endpoint.includes('?') ? '&' : '?') + queryString;
+      }
+    }
+    return this.request(url, { method: 'GET', ...options });
   }
 
   async post(endpoint, data, options = {}) {

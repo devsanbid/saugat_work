@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-  getAllProducts,
+  getSellerProducts,
   createProduct,
   updateProduct,
   deleteProduct
@@ -68,7 +68,7 @@ router.use(checkSeller);
 router.get('/dashboard/stats', getUserStats);
 router.get('/dashboard', getSellerDashboard);
 router.get('/analytics', getSellerAnalytics);
-router.get('/products', getAllProducts);
+router.get('/products', getSellerProducts);
 router.post('/products', validateProduct, handleValidationErrors, createProduct);
 router.put('/products/:id', updateProduct);
 router.delete('/products/:id', deleteProduct);

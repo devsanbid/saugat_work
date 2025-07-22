@@ -1,5 +1,26 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Package, ShoppingBag, DollarSign, Users, Star, TrendingUp, Eye, ArrowUpRight } from 'lucide-react';
+import { 
+  Package, 
+  ShoppingBag, 
+  DollarSign, 
+  Users, 
+  TrendingUp, 
+  Star,
+  ArrowUpRight,
+  Plus,
+  BarChart3,
+  Calendar,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Truck,
+  ShoppingCart,
+  Activity,
+  Target,
+  Award,
+  Zap,
+  ChevronRight
+} from 'lucide-react';
 import StatCard from '../../../components/common/StatCard';
 import ProductForm from '../../../components/common/ProductForm';
 import { sellerAPI, authAPI } from '../../../utils/api';
@@ -25,17 +46,23 @@ const Dashboard = ({ onTabChange }) => {
   const [showProductForm, setShowProductForm] = useState(false);
 
   useEffect(() => {
+    console.log('Dashboard component mounted, fetching data...');
     fetchDashboardData();
   }, []);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      console.log('Fetching dashboard data...');
       const response = await sellerAPI.getSellerDashboard();
-      setDashboardData(response.data);
+      console.log('Dashboard API response:', response);
+      console.log('Dashboard data received:', response);
+      setDashboardData(response);
+      console.log('Dashboard state updated with:', response);
       setError(null);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
+      console.error('Dashboard fetch error:', err);
       if (err.response?.status === 403 && err.response?.data?.message?.includes('not approved')) {
         setError('Your seller account is pending approval. Please wait for admin verification.');
       } else {
@@ -70,183 +97,421 @@ const Dashboard = ({ onTabChange }) => {
     }
   };
 
+  console.log('Current dashboard data state:', dashboardData);
+  console.log('Loading state:', loading);
+  console.log('Error state:', error);
+
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {/* Welcome Section - Fully Responsive */}
-      <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Welcome back, {sellerName}!</h1>
-            <p className="text-red-100 text-sm sm:text-base lg:text-lg">Here's what's happening with your store today</p>
-          </div>
-          <div className="hidden sm:block">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <ShoppingBag size={28} className="text-white sm:w-8 sm:h-8 lg:w-12 lg:h-12" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Loading State */}
-      {loading && (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          {error}
-        </div>
-      )}
-
-      {/* Stats Cards - Responsive Grid */}
-      {!loading && !error && dashboardData && dashboardData.stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <StatCard 
-            title="Total Products" 
-            value={dashboardData.stats.totalProducts || 0} 
-            icon={<Package className="text-red-500" size={24} />}
-            trend={12}
-            color="red"
-          />
-          <StatCard 
-            title="Active Products" 
-            value={dashboardData.stats.activeProducts || 0} 
-            icon={<ShoppingBag className="text-blue-500" size={24} />}
-            trend={8}
-            color="blue"
-          />
-          <StatCard 
-            title="Total Revenue" 
-            value={`Rs${dashboardData.stats.totalRevenue?.toLocaleString() || 0}`} 
-            icon={<DollarSign className="text-green-500" size={24} />}
-            trend={15}
-            color="green"
-          />
-          <StatCard 
-            title="Total Customers" 
-            value={dashboardData.stats.totalCustomers || 0} 
-            icon={<Users className="text-purple-500" size={24} />}
-            trend={5}
-            color="purple"
-          />
-        </div>
-      )}
-
-      {/* Main Content Grid - Responsive Layout */}
-      {!loading && !error && dashboardData && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        {/* Recent Orders - Responsive */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100">
-            <div className="p-4 sm:p-6 border-b border-gray-100">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-800">Recent Orders</h3>
-                <button 
-                  onClick={handleViewAllOrders}
-                  className="text-red-500 hover:text-red-600 font-medium flex items-center space-x-1 transition-colors text-sm sm:text-base"
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+        {/* Enhanced Welcome Section */}
+        <div className="bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-2xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-black bg-opacity-10"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white bg-opacity-5 rounded-full -translate-y-32 translate-x-32"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white bg-opacity-5 rounded-full translate-y-24 -translate-x-24"></div>
+          
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                    <Award className="text-white" size={24} />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Welcome back, {sellerName}!</h1>
+                    <p className="text-red-100 text-sm sm:text-base">Seller Dashboard</p>
+                  </div>
+                </div>
+                <p className="text-red-100 text-base sm:text-lg mb-6">Here's your store performance overview and latest updates</p>
+                
+                <div className="flex flex-wrap gap-4">
+                  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center space-x-2">
+                    <Calendar className="text-white" size={16} />
+                    <span className="text-sm font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </div>
+                  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center space-x-2">
+                    <Activity className="text-white" size={16} />
+                    <span className="text-sm font-medium">Store Active</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleAddProduct}
+                  className="bg-white text-red-600 px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 hover:bg-red-50 transition-all duration-200 shadow-lg"
                 >
-                  <span>View All</span>
-                  <ArrowUpRight size={16} />
+                  <Plus size={20} />
+                  <span>Add Product</span>
+                </button>
+                <button
+                  onClick={handleViewAnalytics}
+                  className="bg-white bg-opacity-10 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 hover:bg-white hover:bg-opacity-20 transition-all duration-200 border border-white border-opacity-20"
+                >
+                  <BarChart3 size={20} />
+                  <span>Analytics</span>
                 </button>
               </div>
             </div>
-            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-              {dashboardData.recentOrders && dashboardData.recentOrders.length > 0 ? (
-                dashboardData.recentOrders.map((order, index) => (
-                <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl hover:bg-gray-100 transition-all duration-200 gap-3 sm:gap-4">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 text-sm sm:text-base">{order.id}</p>
-                      <p className="text-xs sm:text-sm text-gray-600">{order.customer}</p>
-                      <p className="text-xs text-gray-500">{order.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <p className="font-bold text-gray-900 text-base sm:text-lg">Rs{order.amount.toLocaleString()}</p>
-                    <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                      order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                    </span>
-                  </div>
-                </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <ShoppingBag className="mx-auto mb-4 text-gray-300" size={48} />
-                  <p>No recent orders found</p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
-        {/* Top Products - Responsive */}
-        <div>
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="p-4 sm:p-6 border-b border-gray-100">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800">Top Products</h3>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex flex-col justify-center items-center py-16">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-200"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-500 border-t-transparent absolute top-0 left-0"></div>
             </div>
-            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-              {dashboardData.topProducts && dashboardData.topProducts.length > 0 ? (
-                dashboardData.topProducts.map((product, index) => (
-                <div key={product.id} className="flex items-center space-x-3 sm:space-x-4 p-2 sm:p-3 rounded-lg sm:rounded-xl hover:bg-gray-50 transition-all duration-200">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Package className="text-gray-500" size={18} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{product.name}</p>
-                    <p className="text-red-600 font-bold text-sm sm:text-base">Rs{product.price.toLocaleString()}</p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <div className="flex items-center space-x-1">
-                        <Star className="text-yellow-400 fill-current" size={10} />
-                        <span className="text-xs text-gray-600">{product.rating}</span>
-                      </div>
-                      <span className="text-xs text-gray-500">{product.stock} in stock</span>
-                    </div>
-                  </div>
-                </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Package className="mx-auto mb-4 text-gray-300" size={48} />
-                  <p>No top products found</p>
-                </div>
-              )}
+            <p className="text-gray-600 mt-4 font-medium">Loading your dashboard...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-red-700 flex items-center space-x-4">
+            <AlertCircle className="text-red-500 flex-shrink-0" size={24} />
+            <div>
+              <h3 className="font-semibold text-red-800">Unable to load dashboard</h3>
+              <p className="text-red-600">{error}</p>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Enhanced Stats Cards */}
+        {!loading && !error && dashboardData && dashboardData.stats && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Total Products Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                  <Package className="text-red-600" size={24} />
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center space-x-1 text-green-600">
+                    <TrendingUp size={16} />
+                    <span className="text-sm font-medium">+12%</span>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-gray-600 text-sm font-medium mb-1">Total Products</h3>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalProducts || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Products in your store</p>
+            </div>
+
+            {/* Active Products Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <ShoppingBag className="text-blue-600" size={24} />
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center space-x-1 text-green-600">
+                    <TrendingUp size={16} />
+                    <span className="text-sm font-medium">+8%</span>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-gray-600 text-sm font-medium mb-1">Active Products</h3>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.activeProducts || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Currently available</p>
+            </div>
+
+            {/* Total Revenue Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <DollarSign className="text-green-600" size={24} />
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center space-x-1 text-green-600">
+                    <TrendingUp size={16} />
+                    <span className="text-sm font-medium">+15%</span>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-gray-600 text-sm font-medium mb-1">Total Revenue</h3>
+              <p className="text-3xl font-bold text-gray-900">Rs{dashboardData.stats.totalRevenue?.toLocaleString() || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Lifetime earnings</p>
+            </div>
+
+            {/* Total Customers Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                  <Users className="text-purple-600" size={24} />
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center space-x-1 text-green-600">
+                    <TrendingUp size={16} />
+                    <span className="text-sm font-medium">+5%</span>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-gray-600 text-sm font-medium mb-1">Total Customers</h3>
+              <p className="text-3xl font-bold text-gray-900">{dashboardData.stats.totalCustomers || 0}</p>
+              <p className="text-xs text-gray-500 mt-2">Unique buyers</p>
+            </div>
+          </div>
+        )}
+
+        {/* Additional Performance Metrics */}
+        {!loading && !error && dashboardData && dashboardData.stats && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Quick Stats */}
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <Target className="text-white" size={32} />
+                <div className="text-right">
+                  <p className="text-orange-100 text-sm">This Month</p>
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Sales Target</h3>
+              <div className="flex items-end space-x-2">
+                <p className="text-2xl font-bold">Rs{Math.round((dashboardData.stats.totalRevenue || 0) * 0.3).toLocaleString()}</p>
+                <p className="text-orange-200 text-sm">/ Rs{Math.round((dashboardData.stats.totalRevenue || 0) * 0.5).toLocaleString()}</p>
+              </div>
+              <div className="mt-3 bg-white bg-opacity-20 rounded-full h-2">
+                <div className="bg-white rounded-full h-2 w-3/5"></div>
+              </div>
+            </div>
+
+            {/* Store Performance */}
+            <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <Zap className="text-white" size={32} />
+                <div className="text-right">
+                  <p className="text-indigo-100 text-sm">Performance</p>
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Store Rating</h3>
+              <div className="flex items-center space-x-2">
+                <p className="text-2xl font-bold">4.8</p>
+                <div className="flex space-x-1">
+                  {[1,2,3,4,5].map(star => (
+                    <Star key={star} className="text-yellow-300 fill-current" size={16} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-indigo-200 text-sm mt-2">Based on customer reviews</p>
+            </div>
+
+            {/* Order Status */}
+            <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <Truck className="text-white" size={32} />
+                <div className="text-right">
+                  <p className="text-teal-100 text-sm">Orders</p>
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Pending Orders</h3>
+              <p className="text-2xl font-bold">{dashboardData.recentOrders?.filter(order => order.status === 'pending').length || 0}</p>
+              <p className="text-teal-200 text-sm mt-2">Require your attention</p>
+            </div>
+          </div>
+        )}
+
+      {/* Main Content Grid - Enhanced Layout */}
+      {!loading && !error && dashboardData && (
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Recent Orders Section - Enhanced */}
+          <div className="xl:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <ShoppingCart className="text-blue-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Recent Orders</h3>
+                  <p className="text-sm text-gray-500">Latest customer orders</p>
+                </div>
+              </div>
+              <button 
+                onClick={handleViewAllOrders}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+              >
+                <span>View All</span>
+                <ArrowUpRight size={16} />
+              </button>
+            </div>
+            
+            {console.log('Recent orders data:', dashboardData.recentOrders)}
+            {dashboardData.recentOrders && dashboardData.recentOrders.length > 0 ? (
+               <div className="space-y-4">
+                 {dashboardData.recentOrders.slice(0, 6).map((order) => (
+                   <div key={order._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200 border border-gray-100">
+                     <div className="flex items-center space-x-4">
+                       <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                         <ShoppingCart className="text-gray-600" size={20} />
+                       </div>
+                       <div>
+                         <p className="font-semibold text-gray-900">Order #{order._id.slice(-8).toUpperCase()}</p>
+                         <p className="text-sm text-gray-600">{order.customer?.firstName} {order.customer?.lastName}</p>
+                         <div className="flex items-center space-x-2 mt-1">
+                           <Clock className="text-gray-400" size={12} />
+                           <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                         </div>
+                       </div>
+                     </div>
+                     <div className="text-right">
+                       <p className="font-bold text-gray-900 text-lg">Rs{order.totalAmount?.toLocaleString()}</p>
+                       <div className="flex items-center justify-end mt-2">
+                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                           order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                           order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                           order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                           'bg-gray-100 text-gray-700'
+                         }`}>
+                           {order.status === 'completed' && <CheckCircle size={12} className="mr-1" />}
+                           {order.status === 'pending' && <Clock size={12} className="mr-1" />}
+                           {order.status === 'processing' && <Activity size={12} className="mr-1" />}
+                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                         </span>
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <ShoppingCart className="text-gray-400" size={32} />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">No Recent Orders</h4>
+                <p className="text-gray-500">Orders will appear here once customers start purchasing</p>
+              </div>
+            )}
+          </div>
+
+          {/* Top Products Section - Enhanced */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="text-green-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Top Products</h3>
+                  <p className="text-sm text-gray-500">Best selling items</p>
+                </div>
+              </div>
+            </div>
+            
+            {console.log('Top products data:', dashboardData.topProducts)}
+            {dashboardData.topProducts && dashboardData.topProducts.length > 0 ? (
+               <div className="space-y-4">
+                 {dashboardData.topProducts.slice(0, 5).map((product, index) => (
+                   <div key={product._id} className="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200 border border-gray-100">
+                     <div className="flex-shrink-0 mr-4">
+                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                         index === 0 ? 'bg-yellow-100' :
+                         index === 1 ? 'bg-gray-100' :
+                         index === 2 ? 'bg-orange-100' :
+                         'bg-blue-100'
+                       }`}>
+                         <span className={`font-bold ${
+                           index === 0 ? 'text-yellow-600' :
+                           index === 1 ? 'text-gray-600' :
+                           index === 2 ? 'text-orange-600' :
+                           'text-blue-600'
+                         }`}>#{index + 1}</span>
+                       </div>
+                     </div>
+                     <div className="flex-1">
+                       <p className="font-semibold text-gray-900 mb-1">{product.name}</p>
+                       <p className="text-sm text-gray-600 mb-2">Rs{product.price?.toLocaleString()}</p>
+                       <div className="flex items-center space-x-4 text-xs text-gray-500">
+                         <span className="flex items-center space-x-1">
+                           <ShoppingCart size={12} />
+                           <span>{product.salesCount || 0} sold</span>
+                         </span>
+                         <span className="flex items-center space-x-1">
+                           <Package size={12} />
+                           <span>{product.stock || 0} left</span>
+                         </span>
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Package className="text-gray-400" size={32} />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">No Products Data</h4>
+                <p className="text-gray-500 text-sm">Add products to see performance metrics</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
-      {/* Quick Actions - Responsive */}
+      {/* Quick Actions - Enhanced */}
       {!loading && !error && dashboardData && (
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
-  <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">Quick Actions</h3>
-  {/* Increased gap to gap-12 for more space */}
-  <div className="flex flex-wrap justify-center gap-12">
-    <button
-      onClick={handleAddProduct}
-      className="flex items-center justify-center space-x-2 sm:space-x-3 p-3 sm:p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg sm:rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 min-w-[200px]"
-    >
-      <Package size={20} />
-      <span className="font-medium text-sm sm:text-base">Add New Product</span>
-    </button>
-    <button
-      onClick={handleViewAnalytics}
-      className="flex items-center justify-center space-x-2 sm:space-x-3 p-3 sm:p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg sm:rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 min-w-[200px]"
-    >
-      <Eye size={20} />
-      <span className="font-medium text-sm sm:text-base">View Analytics</span>
-    </button>
-        </div>
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Quick Actions</h3>
+              <p className="text-sm text-gray-500">Manage your store efficiently</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Add Product */}
+            <button 
+              onClick={() => setShowProductForm(true)}
+              className="group bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-opacity-30 transition-all">
+                  <Plus size={24} />
+                </div>
+                <h4 className="font-semibold mb-1">Add Product</h4>
+                <p className="text-xs text-blue-100">Create new listing</p>
+              </div>
+            </button>
+
+            {/* View Analytics */}
+            <button 
+              onClick={handleViewAnalytics}
+              className="group bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-opacity-30 transition-all">
+                  <BarChart3 size={24} />
+                </div>
+                <h4 className="font-semibold mb-1">Analytics</h4>
+                <p className="text-xs text-green-100">View insights</p>
+              </div>
+            </button>
+
+            {/* Manage Orders */}
+            <button 
+              onClick={handleViewAllOrders}
+              className="group bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-opacity-30 transition-all">
+                  <ShoppingCart size={24} />
+                </div>
+                <h4 className="font-semibold mb-1">Orders</h4>
+                <p className="text-xs text-purple-100">Manage orders</p>
+              </div>
+            </button>
+
+            {/* Store Settings */}
+            <button 
+              className="group bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-2xl hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-opacity-30 transition-all">
+                  <Award size={24} />
+                </div>
+                <h4 className="font-semibold mb-1">Settings</h4>
+                <p className="text-xs text-orange-100">Store profile</p>
+              </div>
+            </button>
+          </div>
         </div>
       )}
 
@@ -257,6 +522,7 @@ const Dashboard = ({ onTabChange }) => {
           onClose={() => setShowProductForm(false)}
         />
       )}
+    </div>
     </div>
   );
 };

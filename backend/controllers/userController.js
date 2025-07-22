@@ -54,11 +54,20 @@ const createUser = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, role, isActive, search } = req.query;
+    const { page = 1, limit = 10, role, isActive, search, excludeAdmin } = req.query;
     
     let query = {};
     
-    if (role) query.role = role;
+    if (excludeAdmin === 'true') {
+      if (role && role !== 'all' && role !== 'admin') {
+        query.role = role;
+      } else {
+        query.role = { $ne: 'admin' };
+      }
+    } else if (role) {
+      query.role = role;
+    }
+    
     if (isActive !== undefined) query.isActive = isActive === 'true';
     if (search) {
       query.$or = [
@@ -684,9 +693,14 @@ const getSellerApplications = async (req, res, next) => {
     let query = { role: 'seller' };
     
     if (status === 'pending') {
+      // Only return truly pending applications - not approved and no rejection reason
       query['sellerInfo.isApproved'] = false;
+      query['sellerInfo.rejectionReason'] = { $exists: false };
     } else if (status === 'approved') {
       query['sellerInfo.isApproved'] = true;
+    } else if (status === 'rejected') {
+      query['sellerInfo.isApproved'] = false;
+      query['sellerInfo.rejectionReason'] = { $exists: true };
     }
     
     const skip = (page - 1) * limit;
@@ -733,12 +747,24 @@ const approveSellerApplication = async (req, res, next) => {
       });
     }
     
-    user.sellerInfo.isApproved = approved;
-    user.sellerInfo.approvedAt = approved ? new Date() : null;
-    user.sellerInfo.approvedBy = approved ? req.user.id : null;
+    // Check if application has already been processed
+    if (user.sellerInfo.isApproved || user.sellerInfo.rejectionReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Seller application has already been processed'
+      });
+    }
     
-    if (!approved && rejectionReason) {
-      user.sellerInfo.rejectionReason = rejectionReason;
+    user.sellerInfo.isApproved = approved;
+    
+    if (approved) {
+      user.sellerInfo.approvedAt = new Date();
+      user.sellerInfo.approvedBy = req.user.id;
+    } else {
+      // For rejection, set rejection reason and timestamp
+      user.sellerInfo.rejectionReason = rejectionReason || 'No reason provided';
+      user.sellerInfo.rejectedAt = new Date();
+      user.sellerInfo.rejectedBy = req.user.id;
     }
     
     await user.save();

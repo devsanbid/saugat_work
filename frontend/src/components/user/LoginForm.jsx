@@ -69,7 +69,18 @@ const LoginForm = () => {
     if (validateForm()) {
       try {
         await login(formData.email, formData.password, formData.rememberMe);
-        navigate(from, { replace: true });
+        
+        // Get user data from context after successful login
+        const userData = JSON.parse(localStorage.getItem('doko_user') || sessionStorage.getItem('doko_user'));
+        
+        // Redirect based on user role
+        if (userData?.role === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else if (userData?.role === 'seller') {
+          navigate('/seller/dashboard', { replace: true });
+        } else {
+          navigate(from, { replace: true });
+        }
       } catch (err) {
         console.error('Login error:', err);
       }
@@ -78,7 +89,8 @@ const LoginForm = () => {
 
   const demoCredentials = [
     { email: 'customer@doko.com', password: 'customer123', role: 'Customer' },
-    { email: 'seller@doko.com', password: 'seller123', role: 'Seller' }
+    { email: 'seller@doko.com', password: 'seller123', role: 'Seller' },
+    { email: 'admin@doko.com', password: 'admin123', role: 'Admin' }
   ];
 
   const handleDemoLogin = (credentials) => {

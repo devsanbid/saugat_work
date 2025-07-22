@@ -9,7 +9,7 @@ const UserManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
+  const [filterRole, setFilterRole] = useState('customer');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -36,6 +36,7 @@ const UserManagementPage = () => {
       const params = {
         page,
         limit: pagination.limit,
+        excludeAdmin: 'true',
         ...(search && { search }),
         ...(role && role !== 'all' && { role }),
         ...(status && status !== 'all' && { isActive: status === 'active' })
@@ -140,7 +141,7 @@ const UserManagementPage = () => {
     const totalUsers = pagination.total;
     const activeUsers = users.filter(user => user.isActive).length;
     const inactiveUsers = users.filter(user => !user.isActive).length;
-    const adminUsers = users.filter(user => user.role === 'admin').length;
+    const adminUsers = 0; // Always 0 since we exclude admin users
     const sellerUsers = users.filter(user => user.role === 'seller').length;
     const customerUsers = users.filter(user => user.role === 'customer').length;
     
@@ -160,8 +161,8 @@ const UserManagementPage = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600">Manage and monitor user accounts</p>
+            <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
+            <p className="text-gray-600">Manage and monitor customer accounts</p>
           </div>
           <button 
             onClick={handleAddUser}
@@ -191,10 +192,9 @@ const UserManagementPage = () => {
                 onChange={(e) => setFilterRole(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
+                <option value="customer">Customers Only</option>
                 <option value="all">All Roles</option>
-                <option value="admin">Admin</option>
                 <option value="seller">Seller</option>
-                <option value="customer">Customer</option>
               </select>
               <select
                 value={filterStatus}

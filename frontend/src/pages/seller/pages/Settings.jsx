@@ -1,34 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { Store, Save, AlertCircle, CheckCircle, User, Phone, MapPin, Globe, FileText, CreditCard, Building } from 'lucide-react';
 import { sellerAPI } from '../../../utils/api';
 
 const Settings = () => {
-  const [activeSection, setActiveSection] = useState('profile');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const [profileData, setProfileData] = useState({
-    storeName: '',
-    ownerName: '',
+    businessName: '',
+    businessType: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     address: '',
     description: '',
-    websiteUrl: ''
-  });
-
-  const [notificationSettings, setNotificationSettings] = useState({
-    orderNotifications: true,
-    emailAlerts: true,
-    smsAlerts: false,
-    marketingEmails: true
-  });
-
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    websiteUrl: '',
+    taxNumber: '',
+    bankAccount: {
+      accountNumber: '',
+      bankName: '',
+      accountHolder: ''
+    }
   });
 
   useEffect(() => {
@@ -40,8 +35,24 @@ const Settings = () => {
       setLoading(true);
       const response = await sellerAPI.getSellerSettings();
       if (response.success) {
-        setProfileData(response.data.profile);
-        setNotificationSettings(response.data.notifications);
+        const { profile } = response.data;
+        setProfileData({
+          businessName: profile.storeName || '',
+          businessType: '',
+          firstName: profile.ownerName?.split(' ')[0] || '',
+          lastName: profile.ownerName?.split(' ').slice(1).join(' ') || '',
+          email: profile.email || '',
+          phone: profile.phone || '',
+          address: profile.address || '',
+          description: profile.description || '',
+          websiteUrl: profile.websiteUrl || '',
+          taxNumber: '',
+          bankAccount: {
+            accountNumber: '',
+            bankName: '',
+            accountHolder: ''
+          }
+        });
       }
     } catch (err) {
       setError('Failed to load settings');
@@ -57,352 +68,300 @@ const Settings = () => {
       setSuccess('');
       
       const response = await sellerAPI.updateSellerSettings({
-        profile: profileData
+        profile: {
+          storeName: profileData.businessName,
+          phone: profileData.phone,
+          address: profileData.address,
+          description: profileData.description,
+          websiteUrl: profileData.websiteUrl
+        }
       });
       
       if (response.success) {
-        setSuccess('Profile updated successfully');
+        setSuccess('Store profile updated successfully!');
+        setTimeout(() => setSuccess(''), 3000);
       }
     } catch (err) {
       setError(err.message || 'Failed to update profile');
+      setTimeout(() => setError(''), 5000);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSaveNotifications = async () => {
-    try {
-      setSaving(true);
-      setError('');
-      setSuccess('');
-      
-      const response = await sellerAPI.updateSellerSettings({
-        notifications: notificationSettings
-      });
-      
-      if (response.success) {
-        setSuccess('Notification settings updated successfully');
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to update notification settings');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleChangePassword = async () => {
-    try {
-      if (passwordData.newPassword !== passwordData.confirmPassword) {
-        setError('New passwords do not match');
-        return;
-      }
-      
-      setSaving(true);
-      setError('');
-      setSuccess('');
-      
-      const response = await sellerAPI.updateSellerSettings({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
-      
-      if (response.success) {
-        setSuccess('Password changed successfully');
-        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to change password');
-    } finally {
-      setSaving(false);
+  const handleInputChange = (field, value) => {
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      setProfileData(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value
+        }
+      }));
+    } else {
+      setProfileData(prev => ({
+        ...prev,
+        [field]: value
+      }));
     }
   };
 
   if (loading) {
-    return <div className="p-6">Loading settings...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading store settings...</p>
+        </div>
+      </div>
+    );
   }
 
-  const menuItems = [
-    { id: 'profile', label: 'Store Profile' },
-    { id: 'notifications', label: 'Notifications' },
-    { id: 'security', label: 'Security' },
-  ];
-
-  const SettingsNav = () => (
-    <div className="w-64 bg-white border border-gray-200 p-4">
-      <h3 className="text-lg font-semibold mb-4">Settings</h3>
-      <nav className="space-y-1">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveSection(item.id)}
-            className={`w-full text-left px-3 py-2 rounded ${
-              activeSection === item.id 
-                ? 'bg-blue-500 text-white' 
-                : 'text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
-    </div>
-  );
-
-  const ProfileSettings = () => (
-    <div className="bg-white border border-gray-200 p-6">
-      <h3 className="text-xl font-semibold mb-6">Store Profile</h3>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-      
-      {success && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          {success}
-        </div>
-      )}
-      
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
-            <input
-              type="text"
-              value={profileData.storeName}
-              onChange={(e) => setProfileData({...profileData, storeName: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
-            <input
-              type="text"
-              value={profileData.ownerName}
-              readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input
-              type="email"
-              value={profileData.email}
-              readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <input
-              type="tel"
-              value={profileData.phone}
-              onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Store Address</label>
-          <input
-            type="text"
-            value={profileData.address}
-            onChange={(e) => setProfileData({...profileData, address: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Store Description</label>
-          <textarea
-            value={profileData.description}
-            onChange={(e) => setProfileData({...profileData, description: e.target.value})}
-            rows="3"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-          <input
-            type="url"
-            value={profileData.websiteUrl}
-            onChange={(e) => setProfileData({...profileData, websiteUrl: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <button 
-            onClick={handleSaveProfile}
-            disabled={saving}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-  const NotificationSettings = () => (
-    <div className="bg-white border border-gray-200 p-6">
-      <h3 className="text-xl font-semibold mb-6">Notification Settings</h3>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-      
-      {success && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          {success}
-        </div>
-      )}
-      
-      <div className="space-y-4">
-        {[
-          {
-            key: 'orderNotifications',
-            title: 'Order Notifications',
-            description: 'Get notified when you receive new orders'
-          },
-          {
-            key: 'emailAlerts',
-            title: 'Email Alerts',
-            description: 'Receive important updates via email'
-          },
-          {
-            key: 'smsAlerts',
-            title: 'SMS Alerts',
-            description: 'Get SMS notifications for urgent matters'
-          },
-          {
-            key: 'marketingEmails',
-            title: 'Marketing Emails',
-            description: 'Receive updates about new features and promotions'
-          }
-        ].map((setting) => (
-          <div key={setting.key} className="flex items-center justify-between p-4 border border-gray-200 rounded">
-            <div>
-              <h4 className="font-medium text-gray-900">{setting.title}</h4>
-              <p className="text-sm text-gray-600">{setting.description}</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notificationSettings[setting.key]}
-                onChange={(e) => setNotificationSettings({...notificationSettings, [setting.key]: e.target.checked})}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        ))}
-        
-        <div className="flex justify-end mt-6">
-          <button 
-            onClick={handleSaveNotifications}
-            disabled={saving}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const SecuritySettings = () => (
-    <div className="bg-white border border-gray-200 p-6">
-      <h3 className="text-xl font-semibold mb-6">Security Settings</h3>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-      
-      {success && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-          {success}
-        </div>
-      )}
-      
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-          <input
-            type="password"
-            value={passwordData.currentPassword}
-            onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-          <input
-            type="password"
-            value={passwordData.newPassword}
-            onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-          <input
-            type="password"
-            value={passwordData.confirmPassword}
-            onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        
-        <div className="flex justify-end mt-6">
-          <button 
-            onClick={handleChangePassword}
-            disabled={saving}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            {saving ? 'Updating...' : 'Update Password'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContent = () => {
-    switch(activeSection) {
-      case 'profile':
-        return <ProfileSettings />;
-      case 'notifications':
-        return <NotificationSettings />;
-      case 'security':
-        return <SecuritySettings />;
-      default:
-        return <ProfileSettings />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-gray-600">Manage your store settings and preferences</p>
-        </div>
-
-        <div className="flex space-x-8">
-          <SettingsNav />
-          <div className="flex-1">
-            {renderContent()}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
+              <Store className="text-white" size={24} />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">Store Settings</h1>
           </div>
+          <p className="text-gray-600">Manage your store profile and business information</p>
         </div>
-      </div>
-    </div>
-  );
-};
 
-export default Settings;
+        {/* Alert Messages */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-3">
+            <AlertCircle className="text-red-500 flex-shrink-0" size={20} />
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+        
+        {success && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center space-x-3">
+            <CheckCircle className="text-green-500 flex-shrink-0" size={20} />
+            <p className="text-green-700">{success}</p>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          {/* Store Profile Section */}
+          <div className="p-8">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Building className="text-blue-600" size={18} />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Store Profile</h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Basic Information */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Basic Information</h3>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Business Name *</label>
+                  <div className="relative">
+                    <Store className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                      type="text"
+                      value={profileData.businessName}
+                      onChange={(e) => handleInputChange('businessName', e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter your business name"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                      <input
+                        type="text"
+                        value={profileData.firstName}
+                        readOnly
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                      <input
+                        type="text"
+                        value={profileData.lastName}
+                        readOnly
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">@</div>
+                    <input
+                      type="email"
+                      value={profileData.email}
+                      readOnly
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed for security reasons</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                       type="tel"
+                       value={profileData.phone}
+                       onChange={(e) => handleInputChange('phone', e.target.value)}
+                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                       placeholder="Enter your phone number"
+                     />
+                   </div>
+                 </div>
+               </div>
+
+               {/* Business Details */}
+               <div className="space-y-6">
+                 <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Business Details</h3>
+                 
+                 <div>
+                   <label className="block text-sm font-semibold text-gray-700 mb-2">Business Type</label>
+                   <div className="relative">
+                     <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                     <select
+                       value={profileData.businessType}
+                       onChange={(e) => handleInputChange('businessType', e.target.value)}
+                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+                     >
+                       <option value="">Select business type</option>
+                       <option value="individual">Individual</option>
+                       <option value="company">Company</option>
+                       <option value="partnership">Partnership</option>
+                       <option value="corporation">Corporation</option>
+                     </select>
+                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                   </div>
+                 </div>
+
+                 <div>
+                   <label className="block text-sm font-semibold text-gray-700 mb-2">Tax Number</label>
+                   <div className="relative">
+                     <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                     <input
+                       type="text"
+                       value={profileData.taxNumber}
+                       onChange={(e) => handleInputChange('taxNumber', e.target.value)}
+                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                       placeholder="Enter your tax number"
+                     />
+                   </div>
+                 </div>
+
+                 <div>
+                   <label className="block text-sm font-semibold text-gray-700 mb-2">Bank Account</label>
+                   <div className="relative">
+                     <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                     <input
+                       type="text"
+                       value={profileData.bankAccount}
+                       onChange={(e) => handleInputChange('bankAccount', e.target.value)}
+                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                       placeholder="Enter your bank account number"
+                     />
+                   </div>
+                 </div>
+               </div>
+             </div>
+
+             {/* Contact Information */}
+             <div className="mt-8 space-y-6">
+               <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Contact Information</h3>
+               
+               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 <div>
+                   <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                   <div className="relative">
+                     <MapPin className="absolute left-3 top-3 text-gray-400" size={18} />
+                     <textarea
+                       value={profileData.address}
+                       onChange={(e) => handleInputChange('address', e.target.value)}
+                       rows={3}
+                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 resize-none"
+                       placeholder="Enter your business address"
+                     />
+                   </div>
+                 </div>
+
+                 <div>
+                   <label className="block text-sm font-semibold text-gray-700 mb-2">Website URL</label>
+                   <div className="relative">
+                     <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                     <input
+                       type="url"
+                       value={profileData.websiteUrl}
+                       onChange={(e) => handleInputChange('websiteUrl', e.target.value)}
+                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                       placeholder="https://your-website.com"
+                     />
+                   </div>
+                 </div>
+               </div>
+
+               <div>
+                 <label className="block text-sm font-semibold text-gray-700 mb-2">Store Description</label>
+                 <div className="relative">
+                   <FileText className="absolute left-3 top-3 text-gray-400" size={18} />
+                   <textarea
+                     value={profileData.description}
+                     onChange={(e) => handleInputChange('description', e.target.value)}
+                     rows={4}
+                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 resize-none"
+                     placeholder="Describe your store and what you sell..."
+                   />
+                 </div>
+               </div>
+             </div>
+
+             {/* Save Button */}
+             <div className="mt-8 pt-6 border-t border-gray-200">
+               <div className="flex justify-end">
+                 <button
+                   onClick={handleSaveProfile}
+                   disabled={saving}
+                   className="px-8 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                 >
+                   {saving ? (
+                     <>
+                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                       <span>Saving...</span>
+                     </>
+                   ) : (
+                     <>
+                       <Save size={18} />
+                       <span>Save Changes</span>
+                     </>
+                   )}
+                 </button>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+   );
+ };
+
+ export default Settings;

@@ -297,7 +297,7 @@ const Products = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
                 <select
                   value={couponData.discountType}
-                  onChange={e => setCouponData({ ...couponData, discountType: e.target.value })}
+                  onChange={e => handleInputChange('discountType', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="percentage">Percentage (%)</option>
@@ -309,7 +309,7 @@ const Products = () => {
                 <input
                   type="number"
                   value={couponData.minimumOrderAmount}
-                  onChange={e => setCouponData({ ...couponData, minimumOrderAmount: e.target.value })}
+                  onChange={e => handleInputChange('minimumOrderAmount', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="1000"
                 />
@@ -322,7 +322,7 @@ const Products = () => {
                 <input
                   type="date"
                   value={couponData.validFrom}
-                  onChange={e => setCouponData({ ...couponData, validFrom: e.target.value })}
+                  onChange={e => handleInputChange('validFrom', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
@@ -331,7 +331,7 @@ const Products = () => {
                 <input
                   type="date"
                   value={couponData.validUntil}
-                  onChange={e => setCouponData({ ...couponData, validUntil: e.target.value })}
+                  onChange={e => handleInputChange('validUntil', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
@@ -342,7 +342,7 @@ const Products = () => {
               <textarea
                 rows="3"
                 value={couponData.description}
-                onChange={e => setCouponData({ ...couponData, description: e.target.value })}
+                onChange={e => handleInputChange('description', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="Special offer for valued customers..."
               />

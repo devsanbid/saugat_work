@@ -378,6 +378,93 @@ const searchProducts = async (req, res, next) => {
   }
 };
 
+// Seller-specific function to get only their products
+const getSellerProducts = async (req, res, next) => {
+  try {
+    const {
+      category,
+      subcategory,
+      minPrice,
+      maxPrice,
+      rating,
+      availability,
+      isAuthentic,
+      district,
+      artisan,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      page = 1,
+      limit = 12
+    } = req.query;
+    
+    // Filter by current seller
+    let query = { 
+      seller: req.user.id,
+      isActive: true 
+    };
+    
+    if (category) query.category = category;
+    if (subcategory) query.subcategory = subcategory;
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+    if (rating) query.rating = { $gte: Number(rating) };
+    if (availability === 'in-stock') query.stock = { $gt: 0 };
+    if (isAuthentic === 'true') query.isAuthentic = true;
+    if (district) query.district = district;
+    if (artisan) query.artisan = new RegExp(artisan, 'i');
+    if (search) {
+      query.$text = { $search: search };
+    }
+    
+    const sortOptions = {};
+    switch (sortBy) {
+      case 'price':
+        sortOptions.price = sortOrder === 'desc' ? -1 : 1;
+        break;
+      case 'rating':
+        sortOptions.rating = -1;
+        break;
+      case 'name':
+        sortOptions.name = sortOrder === 'desc' ? -1 : 1;
+        break;
+      case 'newest':
+        sortOptions.createdAt = -1;
+        break;
+      case 'popular':
+        sortOptions.soldCount = -1;
+        break;
+      default:
+        sortOptions.createdAt = -1;
+    }
+    
+    const skip = (page - 1) * limit;
+    
+    const products = await Product.find(query)
+      .populate('seller', 'firstName lastName sellerInfo.businessName sellerInfo.rating')
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(Number(limit));
+    
+    const total = await Product.countDocuments(query);
+    
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: Number(page),
+      products
+    });
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
@@ -388,5 +475,6 @@ module.exports = {
   deleteProduct,
   addProductReview,
   getProductReviews,
-  searchProducts
+  searchProducts,
+  getSellerProducts
 };
