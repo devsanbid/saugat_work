@@ -4,7 +4,6 @@ import {
   UserIcon, 
   EnvelopeIcon, 
   PhoneIcon, 
-  MapPinIcon,
   PencilIcon,
   CheckCircleIcon,
   XMarkIcon,
@@ -44,12 +43,6 @@ const ProfilePage = () => {
     lastName: user?.lastName || '',
     email: user?.email || '',
     phone: user?.phone || '',
-    dateOfBirth: user?.dateOfBirth || '',
-    gender: user?.gender || '',
-    address: user?.address || '',
-    city: user?.city || '',
-    district: user?.district || '',
-    zone: user?.zone || '',
     preferences: {
       newsletter: user?.preferences?.newsletter || false,
       smsNotifications: user?.preferences?.smsNotifications || false,
@@ -67,14 +60,7 @@ const ProfilePage = () => {
   const [errors, setErrors] = useState({});
   const [passwordErrors, setPasswordErrors] = useState({});
 
-  const nepalDistricts = [
-    'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Chitwan', 'Pokhara', 'Butwal',
-    'Biratnagar', 'Janakpur', 'Nepalgunj', 'Dharan', 'Hetauda', 'Itahari'
-  ];
 
-  const nepalZones = [
-    'Central', 'Eastern', 'Western', 'Mid-Western', 'Far-Western'
-  ];
 
   useEffect(() => {
     if (!user) {
@@ -208,12 +194,6 @@ const ProfilePage = () => {
       lastName: user?.lastName || '',
       email: user?.email || '',
       phone: user?.phone || '',
-      dateOfBirth: user?.dateOfBirth || '',
-      gender: user?.gender || '',
-      address: user?.address || '',
-      city: user?.city || '',
-      district: user?.district || '',
-      zone: user?.zone || '',
       preferences: {
         newsletter: user?.preferences?.newsletter || false,
         smsNotifications: user?.preferences?.smsNotifications || false,
@@ -427,96 +407,7 @@ const ProfilePage = () => {
                     </div>
                   </div>
 
-                  {/* Additional Information */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Date of Birth
-                        </label>
-                        <input
-                          type="date"
-                          value={formData.dateOfBirth}
-                          onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                          disabled={!isEditing}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Gender
-                        </label>
-                        <select
-                          value={formData.gender}
-                          onChange={(e) => handleInputChange('gender', e.target.value)}
-                          disabled={!isEditing}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                        >
-                          <option value="">Select Gender</option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
-                          <option value="prefer-not-to-say">Prefer not to say</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Address Information */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Address Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">
-                        <Input
-                          label="Street Address"
-                          value={formData.address}
-                          onChange={(e) => handleInputChange('address', e.target.value)}
-                          icon={MapPinIcon}
-                          disabled={!isEditing}
-                          placeholder="House no., Street name, Area"
-                        />
-                      </div>
-                      <Input
-                        label="City"
-                        value={formData.city}
-                        onChange={(e) => handleInputChange('city', e.target.value)}
-                        disabled={!isEditing}
-                      />
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          District
-                        </label>
-                        <select
-                          value={formData.district}
-                          onChange={(e) => handleInputChange('district', e.target.value)}
-                          disabled={!isEditing}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                        >
-                          <option value="">Select District</option>
-                          {nepalDistricts.map(district => (
-                            <option key={district} value={district}>{district}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Zone
-                        </label>
-                        <select
-                          value={formData.zone}
-                          onChange={(e) => handleInputChange('zone', e.target.value)}
-                          disabled={!isEditing}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                        >
-                          <option value="">Select Zone</option>
-                          {nepalZones.map(zone => (
-                            <option key={zone} value={zone}>{zone}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
                 </form>
               </Card>
 

@@ -5,6 +5,123 @@ import ProductForm from '../../../components/common/ProductForm';
 import { sellerAPI, categoryAPI } from '../../../utils/api';
 import { toast } from 'react-hot-toast';
 
+const CouponModal = ({ couponData, setCouponData, closeAllModals, handleSaveCoupon }) => {
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={closeAllModals}></div>
+      
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-xl shadow-2xl">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Add Coupon</h2>
+          <button 
+            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors" 
+            onClick={closeAllModals}
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Coupon Code</label>
+              <input
+                value={couponData.code}
+                onChange={(e) => setCouponData(prev => ({ ...prev, code: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="SAVE20"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Value {couponData.discountType === 'percentage' ? '(%)' : '(Rs)'}
+              </label>
+              <input
+                type="number"
+                value={couponData.discountValue}
+                onChange={(e) => setCouponData(prev => ({ ...prev, discountValue: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="20"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
+              <select
+                value={couponData.discountType}
+                onChange={(e) => setCouponData(prev => ({ ...prev, discountType: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed Amount (Rs)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Min Order Amount (Rs)</label>
+              <input
+                type="number"
+                value={couponData.minimumOrderAmount}
+                onChange={(e) => setCouponData(prev => ({ ...prev, minimumOrderAmount: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="1000"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={couponData.validFrom}
+                onChange={(e) => setCouponData(prev => ({ ...prev, validFrom: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={couponData.validUntil}
+                onChange={(e) => setCouponData(prev => ({ ...prev, validUntil: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+            <textarea
+              rows="3"
+              value={couponData.description}
+              onChange={(e) => setCouponData(prev => ({ ...prev, description: e.target.value }))}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Special offer for valued customers..."
+            />
+          </div>
+
+          <div className="flex justify-end space-x-4 pt-4">
+            <button 
+              onClick={closeAllModals} 
+              className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveCoupon}
+              className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+            >
+              Save Coupon
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Products = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -246,128 +363,7 @@ const Products = () => {
     return now >= startDate && now <= endDate && discount.active;
   };
 
-  // NEW: Coupon Modal Component
-  const CouponModal = React.memo(() => {
-    const handleInputChange = React.useCallback((field, value) => {
-      setCouponData(prev => ({ ...prev, [field]: value }));
-    }, []);
 
-    return (
-      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={closeAllModals}></div>
-        
-        <div className="relative bg-white rounded-2xl p-6 w-full max-w-xl shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Add Coupon</h2>
-            <button 
-              className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors" 
-              onClick={closeAllModals}
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Coupon Code</label>
-                <input
-                  value={couponData.code}
-                  onChange={e => handleInputChange('code', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="SAVE20"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Value {couponData.discountType === 'percentage' ? '(%)' : '(Rs)'}
-                </label>
-                <input
-                  type="number"
-                  value={couponData.discountValue}
-                  onChange={e => handleInputChange('discountValue', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="20"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
-                <select
-                  value={couponData.discountType}
-                  onChange={e => handleInputChange('discountType', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="percentage">Percentage (%)</option>
-                  <option value="fixed">Fixed Amount (Rs)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Min Order Amount (Rs)</label>
-                <input
-                  type="number"
-                  value={couponData.minimumOrderAmount}
-                  onChange={e => handleInputChange('minimumOrderAmount', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="1000"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
-                <input
-                  type="date"
-                  value={couponData.validFrom}
-                  onChange={e => handleInputChange('validFrom', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">End Date</label>
-                <input
-                  type="date"
-                  value={couponData.validUntil}
-                  onChange={e => handleInputChange('validUntil', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-              <textarea
-                rows="3"
-                value={couponData.description}
-                onChange={e => handleInputChange('description', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Special offer for valued customers..."
-              />
-            </div>
-
-            <div className="flex justify-end space-x-4 pt-4">
-              <button 
-                onClick={closeAllModals} 
-                className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveCoupon}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
-              >
-                Save Coupon
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-
-  });
 
   // Product View Modal Component
   const ProductViewModal = () => {
@@ -914,7 +910,14 @@ const Products = () => {
       {showDiscountModal && <DiscountModal />}
 
       {/* NEW: Coupon Modal */}
-      {showCouponModal && <CouponModal />}
+      {showCouponModal && (
+          <CouponModal 
+            couponData={couponData}
+            setCouponData={setCouponData}
+            closeAllModals={closeAllModals}
+            handleSaveCoupon={handleSaveCoupon}
+          />
+        )}
     </div>
   );
 };

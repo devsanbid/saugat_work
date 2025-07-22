@@ -11,7 +11,33 @@ const ProductImages = ({ images = [], productName = '', className = '' }) => {
     { url: '/api/placeholder/400/400', alt: 'Product image' }
   ];
 
-  const productImages = images.length > 0 ? images : defaultImages;
+  // Transform images to ensure consistent format
+  const transformedImages = images.length > 0 
+    ? images.map((img, index) => {
+        // If image is already an object with url property, use it
+        if (typeof img === 'object' && img.url) {
+          return img;
+        }
+        // If image is a string, transform it to object format
+        if (typeof img === 'string') {
+          return {
+            url: img,
+            alt: `${productName} - Image ${index + 1}`
+          };
+        }
+        // Fallback for any other format
+        return {
+          url: '/api/placeholder/400/400',
+          alt: `${productName} - Image ${index + 1}`
+        };
+      })
+    : defaultImages;
+
+  // Debug logging
+  console.log('ProductImages - Original images:', images);
+  console.log('ProductImages - Transformed images:', transformedImages);
+
+  const productImages = transformedImages;
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % productImages.length);
@@ -22,6 +48,11 @@ const ProductImages = ({ images = [], productName = '', className = '' }) => {
   };
 
   const handleImageError = (index) => {
+    console.log('Image failed to load:', {
+      index,
+      imageUrl: productImages[index]?.url,
+      productName
+    });
     setImageError(prev => ({ ...prev, [index]: true }));
   };
 

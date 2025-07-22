@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 
 const createUser = async (req, res, next) => {
   try {
@@ -366,7 +367,7 @@ const getSellerDashboard = async (req, res, next) => {
     
     // Get seller stats
     const productStats = await Product.aggregate([
-      { $match: { seller: sellerId } },
+      { $match: { seller: new mongoose.Types.ObjectId(sellerId) } },
       {
         $group: {
           _id: null,
@@ -392,7 +393,7 @@ const getSellerDashboard = async (req, res, next) => {
     
     // Get customer count from orders
     const customerStats = await Order.aggregate([
-      { $match: { 'items.seller': sellerId } },
+      { $match: { 'items.seller': new mongoose.Types.ObjectId(sellerId) } },
       { $group: { _id: '$user' } },
       { $count: 'totalCustomers' }
     ]);
@@ -401,7 +402,7 @@ const getSellerDashboard = async (req, res, next) => {
     
     // Get recent orders for this seller
     const recentOrders = await Order.find({
-      'items.seller': sellerId
+      'items.seller': new mongoose.Types.ObjectId(sellerId)
     })
     .populate('user', 'firstName lastName email')
     .populate('items.product', 'name image price')
@@ -429,7 +430,7 @@ const getSellerDashboard = async (req, res, next) => {
     
     // Get top selling products for this seller
     const topProducts = await Product.find({ 
-      seller: sellerId,
+      seller: new mongoose.Types.ObjectId(sellerId),
       isActive: true 
     })
     .sort({ soldCount: -1 })
@@ -808,6 +809,8 @@ const getSellerSettings = async (req, res, next) => {
     const settings = {
       profile: {
         storeName: seller.sellerInfo?.businessName || '',
+        firstName: seller.firstName || '',
+        lastName: seller.lastName || '',
         ownerName: `${seller.firstName} ${seller.lastName}`,
         email: seller.email,
         phone: seller.phone || '',
@@ -873,6 +876,8 @@ const updateSellerProfile = async (req, res, next) => {
         seller.sellerInfo = seller.sellerInfo || {};
         seller.sellerInfo.businessName = profile.storeName;
       }
+      if (profile.firstName) seller.firstName = profile.firstName;
+      if (profile.lastName) seller.lastName = profile.lastName;
       if (profile.phone) seller.phone = profile.phone;
       if (profile.address) seller.address = profile.address;
       if (profile.description) {
@@ -906,6 +911,8 @@ const updateSellerProfile = async (req, res, next) => {
       data: {
         profile: {
           storeName: seller.sellerInfo?.businessName || '',
+          firstName: seller.firstName || '',
+          lastName: seller.lastName || '',
           ownerName: `${seller.firstName} ${seller.lastName}`,
           email: seller.email,
           phone: seller.phone || '',

@@ -1,9 +1,8 @@
 import React, { useState, useContext } from 'react';
-import { 
-  UserIcon, 
-  EnvelopeIcon, 
-  PhoneIcon, 
-  MapPinIcon,
+import {
+  UserIcon,
+  EnvelopeIcon,
+  PhoneIcon,
   PencilIcon,
   CheckCircleIcon,
   XMarkIcon
@@ -22,12 +21,7 @@ const UserProfile = () => {
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address || '',
-    city: user?.city || '',
-    district: user?.district || '',
-    dateOfBirth: user?.dateOfBirth || '',
-    gender: user?.gender || ''
+    phone: user?.phone || ''
   });
 
   const [errors, setErrors] = useState({});
@@ -79,12 +73,7 @@ const UserProfile = () => {
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
       email: user?.email || '',
-      phone: user?.phone || '',
-      address: user?.address || '',
-      city: user?.city || '',
-      district: user?.district || '',
-      dateOfBirth: user?.dateOfBirth || '',
-      gender: user?.gender || ''
+      phone: user?.phone || ''
     });
     setErrors({});
     setIsEditing(false);
@@ -205,83 +194,7 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Address Information */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Address Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <Input
-                    label="Street Address"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    icon={MapPinIcon}
-                    disabled={!isEditing}
-                    placeholder="House no., Street name, Area"
-                  />
-                </div>
-                <Input
-                  label="City"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  disabled={!isEditing}
-                />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    District
-                  </label>
-                  <select
-                    value={formData.district}
-                    onChange={(e) => handleInputChange('district', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                  >
-                    <option value="">Select District</option>
-                    <option value="Kathmandu">Kathmandu</option>
-                    <option value="Lalitpur">Lalitpur</option>
-                    <option value="Bhaktapur">Bhaktapur</option>
-                    <option value="Chitwan">Chitwan</option>
-                    <option value="Pokhara">Pokhara</option>
-                    <option value="Biratnagar">Biratnagar</option>
-                  </select>
-                </div>
-              </div>
-            </div>
 
-            {/* Additional Information */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gender
-                  </label>
-                  <select
-                    value={formData.gender}
-                    onChange={(e) => handleInputChange('gender', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
-                  </select>
-                </div>
-              </div>
-            </div>
           </form>
         </div>
       </div>

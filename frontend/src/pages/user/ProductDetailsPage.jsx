@@ -23,6 +23,8 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Modal from '../../components/ui/Modal';
+import { productAPI } from '../../utils/api';
+import { toast } from 'react-toastify';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -33,6 +35,7 @@ const ProductDetailsPage = () => {
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [activeTab, setActiveTab] = useState('description');
@@ -41,146 +44,55 @@ const ProductDetailsPage = () => {
   const [isImageZoomed, setIsImageZoomed] = useState(false);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
 
-  // Mock product data
-  const mockProduct = {
-    id: parseInt(id),
-    name: 'Handcrafted Traditional Sarangi',
-    nepaliName: 'हस्तनिर्मित सारंगी',
-    price: 15000,
-    originalPrice: 18000,
-    images: [
-      { url: '/api/placeholder/400/400', alt: 'Sarangi front view' },
-      { url: '/api/placeholder/400/400', alt: 'Sarangi side view' },
-      { url: '/api/placeholder/400/400', alt: 'Sarangi back view' },
-      { url: '/api/placeholder/400/400', alt: 'Sarangi detail view' }
-    ],
-    rating: 4.8,
-    reviewCount: 24,
-    category: 'musical-instruments',
-    subcategory: 'String Instruments',
-    isNew: true,
-    isAuthentic: true,
-    stock: 5,
-    sku: 'SAR-001',
-    description: 'This beautiful handcrafted Sarangi is made from premium seasoned wood by master craftsmen from the hill regions of Nepal. Each instrument is unique and produces rich, melodious tones that have been cherished in Nepali folk music for centuries.',
-    longDescription: `The Sarangi is one of Nepal's most beloved traditional string instruments, dating back several centuries. This particular piece is crafted using traditional techniques passed down through generations of skilled artisans in the Kathmandu Valley.
-
-    Our master craftsmen use only the finest seasoned wood, carefully selected for its acoustic properties. The instrument features traditional carvings and decorations that are not just aesthetic but also carry cultural significance. Each Sarangi is hand-tuned and tested to ensure perfect sound quality.
-
-    The instrument comes with a traditional bow and is ready to play. It's perfect for both beginners learning traditional Nepali music and experienced musicians looking for an authentic instrument.`,
-    features: [
-      'Made from premium seasoned wood',
-      'Hand-carved traditional decorations',
-      'Perfect acoustic properties',
-      'Includes traditional bow',
-      'Handcrafted by master artisans',
-      'Unique piece with natural variations',
-      'Traditional tuning pegs',
-      'Authentic Nepali craftsmanship'
-    ],
-    specifications: {
-      'Material': 'Seasoned hardwood',
-      'Dimensions': '24" x 8" x 4"',
-      'Weight': '1.2 kg',
-      'Strings': '4 main strings + sympathetic strings',
-      'Origin': 'Kathmandu Valley, Nepal',
-      'Crafting Time': '15-20 days',
-      'Finish': 'Natural wood with traditional lacquer',
-      'Bow Material': 'Horsehair and bamboo'
-    },
-    culturalInfo: 'The Sarangi holds deep cultural significance in Nepali society. It has been the companion of traditional musicians, storytellers, and spiritual practitioners for centuries. The instrument is particularly associated with folk tales, religious ceremonies, and cultural celebrations throughout Nepal.',
-    artisanInfo: {
-      name: 'Ram Bahadur Tamang',
-      location: 'Bhaktapur, Nepal',
-      experience: '25+ years',
-      specialty: 'Traditional string instruments',
-      bio: 'Ram Bahadur has been crafting traditional Nepali instruments for over 25 years. He learned the craft from his father and continues the family tradition of creating beautiful, authentic instruments.'
-    },
-    variants: [
-      { id: 1, name: 'Standard Size', price: 0, inStock: true },
-      { id: 2, name: 'Compact Size', price: -2000, inStock: true },
-      { id: 3, name: 'Premium Carved', price: 5000, inStock: false }
-    ],
-    deliveryInfo: {
-      freeDelivery: true,
-      deliveryTime: '3-5 days',
-      cashOnDelivery: true,
-      returnPolicy: '30 days'
-    },
-    reviews: [
-      {
-        id: 1,
-        userName: 'Rajesh Sharma',
-        rating: 5,
-        title: 'Exceptional Quality',
-        comment: 'The sound quality is amazing! Exactly what I was looking for. The craftsmanship is outstanding.',
-        date: '2024-01-15',
-        isVerified: true,
-        helpfulCount: 12
-      },
-      {
-        id: 2,
-        userName: 'Sarah Johnson',
-        rating: 5,
-        title: 'Beautiful Instrument',
-        comment: 'Bought this for my music collection. The traditional carvings are beautiful and the sound is melodious.',
-        date: '2024-01-10',
-        isVerified: true,
-        helpfulCount: 8
-      }
-    ],
-    tags: ['Traditional', 'Handmade', 'Musical Instrument', 'String Instrument', 'Nepal', 'Authentic'],
-    seoTitle: 'Handcrafted Traditional Sarangi - Authentic Nepali Musical Instrument',
-    seoDescription: 'Buy authentic handcrafted Sarangi from Nepal. Premium quality traditional string instrument made by skilled artisans.',
-    freeDelivery: true,
-    emoji: '🎻'
-  };
-
-  // Mock related products
-  const mockRelatedProducts = [
-    {
-      id: 2,
-      name: 'Traditional Madal',
-      price: 4500,
-      image: '/api/placeholder/300/300',
-      rating: 4.7,
-      reviewCount: 19,
-      category: 'musical-instruments',
-      isAuthentic: true,
-      stock: 8
-    },
-    {
-      id: 3,
-      name: 'Bamboo Flute (Bansuri)',
-      price: 800,
-      image: '/api/placeholder/300/300',
-      rating: 4.6,
-      reviewCount: 15,
-      category: 'musical-instruments',
-      isAuthentic: true,
-      stock: 12
-    },
-    {
-      id: 4,
-      name: 'Traditional Tabla Set',
-      price: 8500,
-      image: '/api/placeholder/300/300',
-      rating: 4.9,
-      reviewCount: 22,
-      category: 'musical-instruments',
-      isAuthentic: true,
-      stock: 4
-    }
-  ];
-
+  // Fetch product data from API
   useEffect(() => {
-    // Simulate API call
-    setLoading(true);
-    setTimeout(() => {
-      setProduct(mockProduct);
-      setRelatedProducts(mockRelatedProducts);
-      setLoading(false);
-    }, 1000);
+    const fetchProductData = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch product details
+        const productResponse = await productAPI.getProductById(id);
+        
+        if (productResponse.success) {
+          console.log('Product data received:', productResponse.product);
+          console.log('Product images:', productResponse.product.images);
+          setProduct(productResponse.product);
+          
+          // Fetch related products
+          try {
+            const relatedResponse = await productAPI.getProducts({
+              category: productResponse.product.category,
+              limit: 4
+            });
+            
+            if (relatedResponse.success) {
+              // Filter out current product from related products
+              const filtered = relatedResponse.products.filter(
+                p => p._id !== productResponse.product._id
+              );
+              setRelatedProducts(filtered.slice(0, 4));
+            }
+          } catch (relatedError) {
+            console.error('Error fetching related products:', relatedError);
+            // Don't show error for related products, just set empty array
+            setRelatedProducts([]);
+          }
+        } else {
+          setError(productResponse.message || 'Product not found');
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        setError('Failed to load product. Please try again.');
+        toast.error('Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProductData();
   }, [id]);
 
   const formatPrice = (price) => {
@@ -206,18 +118,22 @@ const ProductDetailsPage = () => {
     };
     
     addToCart(cartItem);
-    
-    // Show success feedback
-    alert('Product added to cart!');
   };
 
   const handleWishlistToggle = () => {
+    if (!user) {
+      toast.error('Please login to add items to wishlist');
+      return;
+    }
+    
     if (!product) return;
     
     if (isInWishlist(product._id)) {
       removeFromWishlist(product._id);
+      toast.success('Removed from wishlist');
     } else {
       addToWishlist(product);
+      toast.success('Added to wishlist');
     }
   };
 
@@ -256,7 +172,7 @@ const ProductDetailsPage = () => {
       { name: 'Home', path: '/' },
       { name: 'Categories', path: '/categories' },
       { name: product.subcategory || 'Products', path: `/products/${product.category}` },
-      { name: product.name, path: `/product/${product.id}` }
+      { name: product.name, path: `/product/${product._id}` }
     ];
   };
 
@@ -268,16 +184,25 @@ const ProductDetailsPage = () => {
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-8xl mb-4 opacity-50">🔍</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
-          <p className="text-gray-600 mb-6">The product you're looking for doesn't exist or has been removed.</p>
-          <Button variant="nepal" onClick={() => navigate('/products')}>
-            Browse Products
-          </Button>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {error ? 'Error Loading Product' : 'Product Not Found'}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error || 'The product you\'re looking for doesn\'t exist or has been removed.'}
+          </p>
+          <div className="space-x-4">
+            <Button variant="outline" onClick={() => navigate(-1)}>
+              Go Back
+            </Button>
+            <Button variant="nepal" onClick={() => navigate('/categories')}>
+              Browse Products
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -488,7 +413,7 @@ const ProductDetailsPage = () => {
                   onClick={handleWishlistToggle}
                   variant="outline"
                   size="lg"
-                  className="px-6"
+                  className={`px-6 ${isInWishlist(product._id) ? 'text-red-600 border-red-600' : ''}`}
                 >
                   {isInWishlist(product._id) ? (
                     <HeartIconSolid className="h-5 w-5 text-red-600" />
@@ -505,15 +430,6 @@ const ProductDetailsPage = () => {
                   <ShareIcon className="h-5 w-5" />
                 </Button>
               </div>
-              
-              <Button
-                variant="outline"
-                size="lg"
-                fullWidth
-                className="border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-              >
-                Buy Now - Cash on Delivery
-              </Button>
             </div>
 
             {/* Product Features */}
@@ -521,7 +437,7 @@ const ProductDetailsPage = () => {
               <div className="flex items-center space-x-3">
                 <TruckIcon className="h-5 w-5 text-green-600" />
                 <span className="text-sm text-gray-700">
-                  {product.freeDelivery ? 'Free delivery' : 'Delivery available'} in {product.deliveryInfo.deliveryTime}
+                  {product.freeDelivery ? 'Free delivery' : 'Delivery available'} in {product.deliveryInfo?.deliveryTime || '2-3 days'}
                 </span>
               </div>
               <div className="flex items-center space-x-3">
@@ -534,19 +450,21 @@ const ProductDetailsPage = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-yellow-600">🔄</span>
-                <span className="text-sm text-gray-700">{product.deliveryInfo.returnPolicy} Return Policy</span>
+                <span className="text-sm text-gray-700">{product.deliveryInfo?.returnPolicy || '7 days'} Return Policy</span>
               </div>
             </div>
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-2">
-              {product.tags.map((tag, index) => (
-                <Badge key={index} variant="outline" size="sm" className="flex items-center space-x-1">
-                  <TagIcon className="h-3 w-3" />
-                  <span>{tag}</span>
-                </Badge>
-              ))}
-            </div>
+            {product.tags && product.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {product.tags.map((tag, index) => (
+                  <Badge key={index} variant="outline" size="sm" className="flex items-center space-x-1">
+                    <TagIcon className="h-3 w-3" />
+                    <span>{tag}</span>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -579,15 +497,19 @@ const ProductDetailsPage = () => {
                     {product.longDescription}
                   </p>
                   
-                  <h4 className="text-xl font-semibold text-gray-900 mb-4">Key Features:</h4>
-                  <ul className="space-y-2">
-                    {product.features.map((feature, index) => (
-                      <li key={index} className="flex items-start space-x-2">
-                        <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {product.features && product.features.length > 0 && (
+                    <>
+                      <h4 className="text-xl font-semibold text-gray-900 mb-4">Key Features:</h4>
+                      <ul className="space-y-2">
+                        {product.features.map((feature, index) => (
+                          <li key={index} className="flex items-start space-x-2">
+                            <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -595,20 +517,24 @@ const ProductDetailsPage = () => {
             {activeTab === 'specifications' && (
               <div className="max-w-4xl">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Specifications</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                      <span className="font-medium text-gray-900">{key}:</span>
-                      <span className="text-gray-700">{value}</span>
-                    </div>
-                  ))}
-                </div>
+                {product.specifications && Object.keys(product.specifications).length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(product.specifications).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                        <span className="font-medium text-gray-900">{key}:</span>
+                        <span className="text-gray-700">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600">No specifications available for this product.</p>
+                )}
               </div>
             )}
 
             {activeTab === 'reviews' && (
               <ProductReviews
-                productId={product.id}
+                productId={product._id}
                 reviews={product.reviews}
                 rating={product.rating}
                 reviewCount={product.reviewCount}
@@ -618,43 +544,49 @@ const ProductDetailsPage = () => {
             {activeTab === 'artisan' && (
               <div className="max-w-4xl">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Meet the Artisan</h3>
-                <div className="bg-gradient-to-r from-red-50 to-blue-50 rounded-lg p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      {product.artisanInfo.name.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                        {product.artisanInfo.name}
-                      </h4>
-                      <p className="text-gray-600 mb-2">
-                        📍 {product.artisanInfo.location} | 🎯 {product.artisanInfo.specialty}
-                      </p>
-                      <p className="text-sm text-gray-500 mb-4">
-                        Experience: {product.artisanInfo.experience}
-                      </p>
-                      <p className="text-gray-700 leading-relaxed">
-                        {product.artisanInfo.bio}
-                      </p>
+                {product.artisanInfo ? (
+                  <div className="bg-gradient-to-r from-red-50 to-blue-50 rounded-lg p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                        {product.artisanInfo.name?.charAt(0) || 'A'}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                          {product.artisanInfo.name || 'Unknown Artisan'}
+                        </h4>
+                        <p className="text-gray-600 mb-2">
+                          📍 {product.artisanInfo.location || 'Nepal'} | 🎯 {product.artisanInfo.specialty || 'Traditional Craft'}
+                        </p>
+                        <p className="text-sm text-gray-500 mb-4">
+                          Experience: {product.artisanInfo.experience || 'Not specified'}
+                        </p>
+                        <p className="text-gray-700 leading-relaxed">
+                          {product.artisanInfo.bio || 'No bio available for this artisan.'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <p className="text-gray-600">No artisan information available for this product.</p>
+                )}
               </div>
             )}
           </div>
         </div>
 
         {/* Cultural Heritage Section */}
-        <div className="mt-16 bg-gradient-to-r from-red-50 to-blue-50 rounded-lg p-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              🇳🇵 Cultural Heritage
-            </h3>
-            <p className="text-gray-700 leading-relaxed">
-              {product.culturalInfo}
-            </p>
+        {product.culturalInfo && (
+          <div className="mt-16 bg-gradient-to-r from-red-50 to-blue-50 rounded-lg p-8">
+            <div className="max-w-4xl mx-auto text-center">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                🇳🇵 Cultural Heritage
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                {product.culturalInfo}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Related Products */}
         <div className="mt-16">
@@ -662,7 +594,7 @@ const ProductDetailsPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {relatedProducts.map((relatedProduct) => (
               <ProductCard
-                key={relatedProduct.id}
+                key={relatedProduct._id}
                 product={relatedProduct}
                 onQuickView={() => {}}
               />
@@ -680,7 +612,13 @@ const ProductDetailsPage = () => {
       >
         <div className="space-y-4">
           <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-            <img src={product.images[0]?.url} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
+            {product.images && product.images.length > 0 ? (
+              <img src={product.images[0]?.url} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
+            ) : (
+              <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
+                <span className="text-gray-400 text-xs">No Image</span>
+              </div>
+            )}
             <div>
               <h4 className="font-medium text-gray-900">{product.name}</h4>
               <p className="text-sm text-gray-600">{formatPrice(product.price)}</p>

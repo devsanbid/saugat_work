@@ -105,33 +105,38 @@ const Dashboard = ({ onTabChange }) => {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
         {/* Enhanced Welcome Section */}
-        <div className="bg-gradient-to-br from-red-500 via-red-600 to-red-700 rounded-2xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white bg-opacity-5 rounded-full -translate-y-32 translate-x-32"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white bg-opacity-5 rounded-full translate-y-24 -translate-x-24"></div>
+        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-yellow-400/20 to-pink-400/20 rounded-full -translate-y-48 translate-x-48 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-cyan-400/20 to-blue-400/20 rounded-full translate-y-36 -translate-x-36 blur-2xl"></div>
+          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-x-1/2 -translate-y-1/2 blur-xl"></div>
           
           <div className="relative z-10">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
               <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
-                    <Award className="text-white" size={24} />
+                <div className="flex items-center space-x-4 mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Award className="text-white" size={28} />
                   </div>
                   <div>
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Welcome back, {sellerName}!</h1>
-                    <p className="text-red-100 text-sm sm:text-base">Seller Dashboard</p>
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Welcome back, {sellerName}!</h1>
+                    <p className="text-blue-100 text-base sm:text-lg font-medium">✨ Seller Dashboard</p>
                   </div>
                 </div>
-                <p className="text-red-100 text-base sm:text-lg mb-6">Here's your store performance overview and latest updates</p>
+                <p className="text-blue-100 text-lg sm:text-xl mb-8 font-light leading-relaxed">Here's your store performance overview and latest updates 🚀</p>
                 
                 <div className="flex flex-wrap gap-4">
-                  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center space-x-2">
-                    <Calendar className="text-white" size={16} />
-                    <span className="text-sm font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  <div className="bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-md rounded-2xl px-6 py-3 flex items-center space-x-3 border border-white/20 shadow-lg">
+                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+                      <Calendar className="text-white" size={14} />
+                    </div>
+                    <span className="text-sm font-semibold">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   </div>
-                  <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center space-x-2">
-                    <Activity className="text-white" size={16} />
-                    <span className="text-sm font-medium">Store Active</span>
+                  <div className="bg-gradient-to-r from-green-400/20 to-emerald-400/20 backdrop-blur-md rounded-2xl px-6 py-3 flex items-center space-x-3 border border-green-300/30 shadow-lg">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                      <Activity className="text-white" size={14} />
+                    </div>
+                    <span className="text-sm font-semibold">🟢 Store Active</span>
                   </div>
                 </div>
               </div>
@@ -139,16 +144,20 @@ const Dashboard = ({ onTabChange }) => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleAddProduct}
-                  className="bg-white text-red-600 px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 hover:bg-red-50 transition-all duration-200 shadow-lg"
+                  className="bg-gradient-to-r from-white to-gray-50 text-purple-700 px-8 py-4 rounded-2xl font-bold flex items-center space-x-3 hover:from-gray-50 hover:to-white hover:scale-105 transition-all duration-300 shadow-2xl border border-white/50"
                 >
-                  <Plus size={20} />
+                  <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <Plus size={16} className="text-white" />
+                  </div>
                   <span>Add Product</span>
                 </button>
                 <button
                   onClick={handleViewAnalytics}
-                  className="bg-white bg-opacity-10 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 hover:bg-white hover:bg-opacity-20 transition-all duration-200 border border-white border-opacity-20"
+                  className="bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-md text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-3 hover:from-white/30 hover:to-white/20 hover:scale-105 transition-all duration-300 border border-white/30 shadow-xl"
                 >
-                  <BarChart3 size={20} />
+                  <div className="w-6 h-6 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+                    <BarChart3 size={16} className="text-white" />
+                  </div>
                   <span>Analytics</span>
                 </button>
               </div>
