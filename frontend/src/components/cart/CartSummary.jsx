@@ -1,12 +1,14 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { TruckIcon, ShieldCheckIcon, TagIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 import { CartContext } from '../../context/CartContext';
+import { cartAPI } from '../../utils/api';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 
 const CartSummary = ({ showCheckoutButton = true, compact = false }) => {
-  const { cartItems, getCartTotal, getCartCount, applyCoupon, removeCoupon, appliedCoupon } = useContext(CartContext);
+  const { cartItems, getCartTotal, getCartCount, applyCoupon, appliedCoupon, removeCoupon } = useContext(CartContext);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
@@ -19,23 +21,46 @@ const CartSummary = ({ showCheckoutButton = true, compact = false }) => {
   const subtotal = getCartTotal();
   const itemCount = getCartCount();
   const shipping = subtotal >= 2000 ? 0 : 150; // Free shipping above Rs. 2000
-  const couponDiscount = appliedCoupon ? (subtotal * appliedCoupon.discount) / 100 : 0;
+  const couponDiscount = appliedCoupon ? 
+    (appliedCoupon.discountType === 'percentage' ? 
+      (subtotal * appliedCoupon.discountValue) / 100 : 
+      appliedCoupon.discountValue) : 0;
   const total = subtotal + shipping - couponDiscount;
 
   const savings = cartItems.reduce((total, item) => {
     return total + (item.originalPrice ? (item.originalPrice - item.price) * item.quantity : 0);
   }, 0);
 
-  const handleCouponApply = (couponCode) => {
-    // Mock coupon validation
-    const validCoupons = {
-      'NEPAL10': { discount: 10, description: 'Get 10% off on all products' },
-      'DOKO20': { discount: 20, description: 'Get 20% off on orders above Rs. 10,000' },
-      'NEWUSER': { discount: 15, description: 'New user discount - 15% off' }
-    };
+  const handleCouponApply = async (couponCode) => {
+    try {
+      const response = await cartAPI.applyCoupon({ 
+        couponCode, 
+        cartItems: cartItems.map(item => ({
+          id: item.id,
+          quantity: item.quantity
+        }))
+      });
+      if (response.success) {
+        applyCoupon({
+          code: couponCode,
+          discountValue: response.cart.appliedCoupon.discountValue,
+          discountType: response.cart.appliedCoupon.discountType,
+          description: response.cart.appliedCoupon.description
+        });
+        toast.success('Coupon applied successfully!');
+      }
+    } catch (error) {
+      toast.error(error.message || 'Invalid coupon code');
+    }
+  };
 
-    if (validCoupons[couponCode]) {
-      applyCoupon({ code: couponCode, ...validCoupons[couponCode] });
+  const handleCouponRemove = async () => {
+    try {
+      await cartAPI.removeCoupon();
+      removeCoupon();
+      toast.success('Coupon removed successfully!');
+    } catch (error) {
+      toast.error(error.message || 'Failed to remove coupon');
     }
   };
 
@@ -88,7 +113,7 @@ const CartSummary = ({ showCheckoutButton = true, compact = false }) => {
               <div className="flex items-center space-x-2">
                 <span className="font-medium text-green-600">-{formatPrice(couponDiscount)}</span>
                 <button
-                  onClick={() => removeCoupon()}
+                  onClick={handleCouponRemove}
                   className="text-red-500 hover:text-red-700 text-xs"
                 >
                   Remove
@@ -161,7 +186,7 @@ const CartSummary = ({ showCheckoutButton = true, compact = false }) => {
         {/* Checkout Button */}
         {showCheckoutButton && (
           <div className="space-y-3">
-            <Link to="/checkout">
+            <Link to="/user/checkout">
               <Button variant="nepal" size="lg" fullWidth>
                 Proceed to Checkout
               </Button>

@@ -223,29 +223,7 @@ const CartPage = () => {
             {/* Cart Summary Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-8">
-                <CartSummary />
-                
-                {/* Checkout Button */}
-                <div className="mt-6 space-y-3">
-                  <Button
-                    onClick={handleCheckout}
-                    variant="nepal"
-                    size="lg"
-                    fullWidth
-                    className="text-lg font-semibold"
-                  >
-                    Proceed to Checkout
-                  </Button>
-                  
-                  <div className="text-center">
-                    <Link
-                      to="/categories"
-                      className="text-sm text-gray-600 hover:text-red-600 transition-colors"
-                    >
-                      Continue Shopping
-                    </Link>
-                  </div>
-                </div>
+                <CartSummary showCheckoutButton={true} />
 
                 {/* Help Section */}
                 <div className="mt-6 bg-gray-50 rounded-lg p-4">

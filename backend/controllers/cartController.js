@@ -273,48 +273,80 @@ const clearCart = async (req, res, next) => {
 
 const applyCoupon = async (req, res, next) => {
   try {
-    const { couponCode } = req.body;
+    const { couponCode, cartItems } = req.body;
+    
+    if (!couponCode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Coupon code is required'
+      });
+    }
     
     const coupon = await Coupon.findOne({
       code: couponCode.toUpperCase(),
       isActive: true
     });
-    
+
     if (!coupon) {
       return res.status(404).json({
         success: false,
         message: 'Invalid coupon code'
       });
     }
-    
+
     if (!coupon.isValid) {
       return res.status(400).json({
         success: false,
         message: 'Coupon is expired or not yet valid'
       });
     }
-    
-    if (!coupon.canBeUsedBy(req.user.id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already used this coupon or reached usage limit'
-      });
-    }
-    
-    const cart = await Cart.findOne({ user: req.user.id })
+
+    let cart = await Cart.findOne({ user: req.user.id })
       .populate('items.product');
     
+    if (!cart) {
+      cart = await Cart.create({ user: req.user.id, items: [] });
+    }
+    
+    // If cartItems are provided from localStorage, sync them with backend
+    if (cartItems && cartItems.length > 0) {
+      // Clear existing cart items
+      cart.items = [];
+      
+      // Add items from localStorage
+      for (const item of cartItems) {
+        const product = await Product.findById(item.id);
+        if (product && product.isActive && product.stock >= item.quantity) {
+          cart.items.push({
+            product: item.id,
+            quantity: item.quantity,
+            price: product.salePrice || product.price
+          });
+        }
+      }
+    } else {
+      // Filter out inactive products (same as in getCart)
+      cart.items = cart.items.filter(item => 
+        item.product && item.product.isActive
+      );
+    }
+    
+    // Recalculate totals after filtering/syncing
+    await cart.calculateTotals();
+    await cart.save();
+
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'Cart is empty'
       });
     }
-    
-    if (cart.totalAmount < coupon.minimumOrderAmount) {
+
+    const canUseResult = coupon.canBeUsedBy(req.user.id, cart.totalAmount);
+    if (!canUseResult.valid) {
       return res.status(400).json({
         success: false,
-        message: `Minimum order amount of Rs. ${coupon.minimumOrderAmount} required`
+        message: canUseResult.reason
       });
     }
     

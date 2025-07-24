@@ -3,7 +3,7 @@ import { CartContext } from '../../context/CartContext';
 import Badge from '../ui/Badge';
 
 const OrderSummary = ({ compact = false }) => {
-  const { cartItems, getCartTotal, getCartCount } = useContext(CartContext);
+  const { cartItems, getCartTotal, getCartCount, appliedCoupon } = useContext(CartContext);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
@@ -17,7 +17,14 @@ const OrderSummary = ({ compact = false }) => {
   const itemCount = getCartCount();
   const shipping = subtotal >= 2000 ? 0 : 150;
   const tax = 0; // No tax for now
-  const total = subtotal + shipping + tax;
+  
+  // Calculate coupon discount
+  const couponDiscount = appliedCoupon ? 
+    (appliedCoupon.discountType === 'percentage' ? 
+      (subtotal * appliedCoupon.discountValue / 100) : 
+      appliedCoupon.discountValue) : 0;
+  
+  const total = subtotal + shipping + tax - couponDiscount;
 
   const savings = cartItems.reduce((total, item) => {
     return total + (item.originalPrice ? (item.originalPrice - item.price) * item.quantity : 0);
@@ -97,6 +104,14 @@ const OrderSummary = ({ compact = false }) => {
               {shipping === 0 ? 'Free' : formatPrice(shipping)}
             </span>
           </div>
+
+          {/* Coupon Discount */}
+          {appliedCoupon && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Coupon ({appliedCoupon.code}):</span>
+              <span className="font-medium text-green-600">-{formatPrice(couponDiscount)}</span>
+            </div>
+          )}
 
           {/* Savings */}
           {savings > 0 && (

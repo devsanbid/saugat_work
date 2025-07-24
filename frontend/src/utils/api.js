@@ -146,8 +146,8 @@ export const cartAPI = {
   updateCartItem: (data) => api.put('/cart/update', data),
   removeFromCart: (productId) => api.delete(`/cart/remove/${productId}`),
   clearCart: () => api.delete('/cart/clear'),
-  applyCoupon: (data) => api.post('/cart/coupon', data),
-  removeCoupon: () => api.delete('/cart/coupon'),
+  applyCoupon: (data) => api.post('/cart/coupon/apply', data),
+  removeCoupon: () => api.delete('/cart/coupon/remove'),
   getCartSummary: () => api.get('/cart/summary'),
 };
 

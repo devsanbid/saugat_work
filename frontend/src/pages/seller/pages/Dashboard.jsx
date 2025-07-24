@@ -354,7 +354,7 @@ const Dashboard = ({ onTabChange }) => {
                          <ShoppingCart className="text-gray-600" size={20} />
                        </div>
                        <div>
-                         <p className="font-semibold text-gray-900">Order #{order._id.slice(-8).toUpperCase()}</p>
+                         <p className="font-semibold text-gray-900">Order #{order._id ? order._id.slice(-8).toUpperCase() : 'N/A'}</p>
                          <p className="text-sm text-gray-600">{order.customer?.firstName} {order.customer?.lastName}</p>
                          <div className="flex items-center space-x-2 mt-1">
                            <Clock className="text-gray-400" size={12} />

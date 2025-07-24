@@ -305,8 +305,27 @@ const ProductListingPage = () => {
                 )}
               </div>
 
-              {/* View Controls */}
-              <div className="flex items-center space-x-4">
+              {/* Category Selection and View Controls */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                {/* Category Selection Dropdown */}
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Category:</span>
+                  <select
+                    value={filters.category}
+                    onChange={(e) => handleFilterChange({ ...filters, category: e.target.value })}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">All Categories</option>
+                    <option value="musical-instruments">Musical Instruments</option>
+                    <option value="handicrafts">Handicrafts</option>
+                    <option value="grocery">Grocery</option>
+                    <option value="tools-crafts">Tools & Crafts</option>
+                    <option value="clothing">Clothing</option>
+                  </select>
+                </div>
+
+                {/* View Controls */}
+                <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-600">View:</span>
                   <div className="flex items-center bg-gray-100 rounded-lg p-1">
@@ -348,6 +367,7 @@ const ProductListingPage = () => {
                     </select>
                   </div>
                 )}
+                </div>
               </div>
             </div>
 

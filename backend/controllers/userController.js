@@ -420,11 +420,15 @@ const getSellerDashboard = async (req, res, next) => {
       );
       
       return {
+        _id: order._id,
         id: order.orderNumber,
-        customer: `${order.user.firstName} ${order.user.lastName}`,
-        amount: orderTotal,
+        customer: {
+          firstName: order.user.firstName,
+          lastName: order.user.lastName
+        },
+        totalAmount: orderTotal,
         status: order.orderStatus,
-        date: order.createdAt.toISOString().split('T')[0]
+        createdAt: order.createdAt
       };
     });
     

@@ -9,6 +9,7 @@ import {
   ListBulletIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 import ProductGrid from '../../components/product/ProductGrid';
 import CategoryFilter from '../../components/product/CategoryFilter';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -16,6 +17,7 @@ import SearchBar from '../../components/common/SearchBar';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
+import { productAPI } from '../../utils/api';
 
 const SearchResultsPage = () => {
   const location = useLocation();
@@ -41,96 +43,7 @@ const SearchResultsPage = () => {
     sortBy: 'relevance'
   });
 
-  // Mock search results data
-  const mockSearchResults = [
-    {
-      id: 1,
-      name: 'Handcrafted Sarangi',
-      price: 15000,
-      originalPrice: 18000,
-      image: '/api/placeholder/300/300',
-      rating: 4.8,
-      reviewCount: 24,
-      category: 'musical-instruments',
-      isNew: true,
-      isAuthentic: true,
-      stock: 5,
-      description: 'Traditional Nepali string instrument',
-      relevanceScore: 0.95,
-      tags: ['sarangi', 'traditional', 'string', 'music', 'nepal']
-    },
-    {
-      id: 2,
-      name: 'Traditional Doko Basket',
-      price: 2500,
-      image: '/api/placeholder/300/300',
-      rating: 4.9,
-      reviewCount: 31,
-      category: 'tools-crafts',
-      isAuthentic: true,
-      stock: 12,
-      description: 'Handwoven bamboo basket',
-      relevanceScore: 0.88,
-      tags: ['doko', 'basket', 'bamboo', 'traditional', 'handwoven']
-    },
-    {
-      id: 3,
-      name: 'Dhaka Topi Cap',
-      price: 1200,
-      originalPrice: 1500,
-      image: '/api/placeholder/300/300',
-      rating: 4.7,
-      reviewCount: 18,
-      category: 'clothing',
-      isAuthentic: true,
-      stock: 8,
-      description: 'Traditional Nepali cap',
-      relevanceScore: 0.82,
-      tags: ['dhaka', 'topi', 'cap', 'traditional', 'nepal']
-    },
-    {
-      id: 4,
-      name: 'Authentic Khukuri',
-      price: 8000,
-      image: '/api/placeholder/300/300',
-      rating: 5.0,
-      reviewCount: 42,
-      category: 'tools-crafts',
-      isAuthentic: true,
-      stock: 3,
-      description: 'Traditional Nepali knife',
-      relevanceScore: 0.77,
-      tags: ['khukuri', 'knife', 'traditional', 'authentic', 'nepal']
-    },
-    {
-      id: 5,
-      name: 'Thanka Painting',
-      price: 12000,
-      image: '/api/placeholder/300/300',
-      rating: 4.9,
-      reviewCount: 15,
-      category: 'handicrafts',
-      isAuthentic: true,
-      stock: 7,
-      description: 'Traditional Buddhist art',
-      relevanceScore: 0.73,
-      tags: ['thanka', 'painting', 'buddhist', 'art', 'traditional']
-    },
-    {
-      id: 6,
-      name: 'Nepali Honey',
-      price: 800,
-      image: '/api/placeholder/300/300',
-      rating: 4.6,
-      reviewCount: 28,
-      category: 'grocery',
-      isAuthentic: true,
-      stock: 15,
-      description: 'Pure mountain honey',
-      relevanceScore: 0.69,
-      tags: ['honey', 'organic', 'mountain', 'pure', 'nepal']
-    }
-  ];
+
 
   // Popular search suggestions
   const popularSearches = [
@@ -156,89 +69,39 @@ const SearchResultsPage = () => {
     setIsSearching(true);
     
     try {
-      // Simulate API call
-      setTimeout(() => {
-        let results = mockSearchResults;
-        
-        if (query) {
-          // Filter results based on search query
-          results = mockSearchResults.filter(item =>
-            item.name.toLowerCase().includes(query.toLowerCase()) ||
-            item.description.toLowerCase().includes(query.toLowerCase()) ||
-            item.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-          );
-          
-          // Sort by relevance score
-          results.sort((a, b) => b.relevanceScore - a.relevanceScore);
-        }
-        
-        // Apply filters
-        results = applyFilters(results);
-        
-        setSearchResults(results);
-        setTotalResults(results.length);
-        setLoading(false);
-        setIsSearching(false);
+      const searchParams = {
+        q: query,
+        page: currentPage,
+        limit: 20,
+        ...filters
+      };
+      
+      const response = await productAPI.searchProducts(searchParams);
+      
+      if (response.success) {
+        setSearchResults(response.data.products);
+        setTotalResults(response.data.total);
+        setHasMore(response.data.hasMore);
         
         // Generate search suggestions
         generateSearchSuggestions(query);
-      }, 800);
+      } else {
+        toast.error('Failed to search products');
+        setSearchResults([]);
+        setTotalResults(0);
+      }
     } catch (error) {
       console.error('Search error:', error);
+      toast.error('Search failed. Please try again.');
+      setSearchResults([]);
+      setTotalResults(0);
+    } finally {
       setLoading(false);
       setIsSearching(false);
     }
   };
 
-  const applyFilters = (results) => {
-    let filteredResults = [...results];
-    
-    // Filter by category
-    if (filters.category) {
-      filteredResults = filteredResults.filter(item => item.category === filters.category);
-    }
-    
-    // Filter by price range
-    filteredResults = filteredResults.filter(item => 
-      item.price >= filters.priceRange[0] && item.price <= filters.priceRange[1]
-    );
-    
-    // Filter by rating
-    if (filters.rating) {
-      filteredResults = filteredResults.filter(item => item.rating >= parseFloat(filters.rating));
-    }
-    
-    // Filter by availability
-    if (filters.availability === 'in-stock') {
-      filteredResults = filteredResults.filter(item => item.stock > 0);
-    } else if (filters.availability === 'out-of-stock') {
-      filteredResults = filteredResults.filter(item => item.stock === 0);
-    }
-    
-    // Apply sorting
-    switch (filters.sortBy) {
-      case 'price-low':
-        filteredResults.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        filteredResults.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        filteredResults.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        filteredResults.sort((a, b) => b.isNew - a.isNew);
-        break;
-      case 'popular':
-        filteredResults.sort((a, b) => b.reviewCount - a.reviewCount);
-        break;
-      default:
-        // relevance - keep current order
-        break;
-    }
-    
-    return filteredResults;
-  };
+
 
   const generateSearchSuggestions = (query) => {
     if (!query) {
@@ -258,10 +121,10 @@ const SearchResultsPage = () => {
     setFilters(newFilters);
     setCurrentPage(1);
     
-    // Re-apply filters to current results
-    const filteredResults = applyFilters(searchResults);
-    setSearchResults(filteredResults);
-    setTotalResults(filteredResults.length);
+    // Re-search with new filters
+    if (searchQuery) {
+      performSearch(searchQuery);
+    }
   };
 
   const handleNewSearch = (query) => {

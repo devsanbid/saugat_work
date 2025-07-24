@@ -9,11 +9,13 @@ import {
   ArrowRightIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import SearchBar from '../../components/common/SearchBar';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
+import { categoryAPI } from '../../utils/api';
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
@@ -157,12 +159,21 @@ const CategoriesPage = () => {
   ];
 
   useEffect(() => {
-    // Simulate API call
-    setLoading(true);
-    setTimeout(() => {
-      setCategories(categoriesData);
-      setLoading(false);
-    }, 1000);
+    const loadCategories = async () => {
+      setLoading(true);
+      try {
+        const response = await categoryAPI.getCategories();
+        setCategories(response.categories || []);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        toast.error('Failed to load categories');
+        setCategories(categoriesData);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadCategories();
   }, []);
 
   const filteredCategories = categories.filter(category =>

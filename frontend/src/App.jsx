@@ -542,6 +542,7 @@ function App() {
                         <AdminLayout />
                       </ProtectedRoute>
                     }>
+                      <Route index element={<Navigate to="/admin/dashboard" replace />} />
                       <Route path="dashboard" element={<Overview />} />
                       <Route path="profile" element={<AdminProfile />} />
                       <Route path="usermanagement" element={<Usermanagement />} />
